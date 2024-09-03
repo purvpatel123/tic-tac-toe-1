@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            cursor: pointer;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .cell.x {
+            color: #000;
+        }
+        .cell.o {
+            color: #f00;
+        }
+        #game-info {
+            margin-top: 20px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-board"></div>
+    <div id="game-info">
+        <h2>Tic Tac Toe</h2>
+        <p>Player X's Turn</p>
+        <button id="reset-button">Reset Game</button>
+        <button id="vs-computer-button">Play vs Computer</button>
+    </div>
+
+    <script>
+        const board = ['', '', '', '', '', '', '', '', ''];
+        const gameBoard = document.getElementById('game-board');
+        const gameInfo = document.getElementById('game-info');
+        const resetButton = document.getElementById('reset-button');
+        const vsComputerButton = document.getElementById('vs-computer-button');
+        let currentPlayer = 'X';
+        let gameOver = false;
+        let isComputerTurn = false;
+        let playerSymbol = 'X';
+
+        function createBoard() {
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleClick);
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        function handleClick(e) {
+            if (gameOver || isComputerTurn) return;
+
+            const cellIndex = parseInt(e.target.dataset.index);
+            if (board[cellIndex] !== '') return;
+
+            board[cellIndex] = playerSymbol;
+            e.target.textContent = playerSymbol;
+            e.target.classList.add(playerSymbol.toLowerCase());
+
+            if (checkWin()) {
+                gameOver = true;
+                gameInfo.querySelector('p').textContent = `Player ${playerSymbol} Wins!`;
+            } else if (checkDraw()) {
+                gameOver = true;
+                gameInfo.querySelector('p').textContent = 'It is a Draw!';
+            } else {
+                isComputerTurn = true;
+                setTimeout(computerTurn, 500);
+            }
+        }
+
+        function computerTurn() {
+            let bestMove = findBestMove();
+            board[bestMove] = 'O';
+            gameBoard.querySelector(`.cell[data-index="${bestMove}"]`).textContent = 'O';
+            gameBoard.querySelector(`.cell[data-index="${bestMove}"]`).classList.add('o');
+
+            if (checkWin()) {
+                gameOver = true;
+                gameInfo.querySelector('p').textContent = `Player O Wins!`;
+            } else if (checkDraw()) {
+                gameOver = true;
+                gameInfo.querySelector('p').textContent = 'It is a Draw!';
+            } else {
+                isComputerTurn = false;
+                gameInfo.querySelector('p').textContent = `Player ${playerSymbol}'s Turn`;
+            }
+        }
+
+        function findBestMove() {
+            return minimax(board, 'O').index;
+        }
+
+        function minimax(newBoard, player) {
+            let availableSpots = [];
+            for (let i = 0; i < 9; i++) {
+                if (newBoard[i] === '') {
+                    availableSpots.push(i);
+                }
+            }
+
+            if (checkWin(newBoard, 'O')) {
+                return { score: 10 };
+            } else if (checkWin(newBoard, 'X')) {
+                return { score: -10 };
+            } else if (availableSpots.length === 0) {
+                return { score: 0 };
+            }
+
+            let moves = [];
+            for (let i = 0; i < availableSpots.length; i++) {
+                let move = {};
+                move.index = availableSpots[i];
+                newBoard[availableSpots[i]] = player;
+
+                if (player === 'O') {
+                    let result = minimax(newBoard, 'X');
+                    move.score = result.score;
+                } else {
+                    let result = minimax(newBoard, 'O');
+                    move.score = result.score;
+                }
+
+                newBoard[availableSpots[i]] = '';
+                moves.push(move);
+            }
+
+            let bestMove;
+            if (player === 'O') {
+                let bestScore = -Infinity;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score > bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < moves.length; i++) {
+                    if (moves[i].score < bestScore) {
+                        bestScore = moves[i].score;
+                        bestMove = i;
+                    }
+                }
+            }
+            return moves[bestMove];
+        }
+
+        function checkWin() {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            for (const condition of winConditions) {
+                if (
+                    board[condition[0]] !== '' &&
+                    board[condition[0]] === board[condition[1]] &&
+                    board[condition[0]] === board[condition[2]]
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkDraw() {
+            return board.every(cell => cell !== '');
+        }
+
+        function resetGame() {
+            board.fill('');
+            gameOver = false;
+            currentPlayer = 'X';
+            isComputerTurn = false;
+            gameInfo.querySelector('p').textContent = `Player ${playerSymbol}'s Turn`;
+            const cells = gameBoard.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x');
+                cell.classList.remove('o');
+            });
+        }
+
+        function startVsComputer() {
+            playerSymbol = 'X';
+            currentPlayer = 'X';
+            isComputerTurn = false;
+            gameOver = false;
+            resetGame();
+            gameInfo.querySelector('p').textContent = `Player ${playerSymbol}'s Turn`;
+        }
+
+        createBoard();
+        resetButton.addEventListener('click', resetGame);
+        vsComputerButton.addEventListener('click', startVsComputer);
+    </script>
+</body>
+</html>

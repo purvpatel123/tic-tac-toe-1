@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            cursor: pointer;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .cell.x {
+            color: #000;
+        }
+        .cell.o {
+            color: #f00;
+        }
+        #game-info {
+            margin-top: 20px;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-board"></div>
+    <div id="game-info">
+        <h2>Tic Tac Toe</h2>
+        <p>Player X's Turn</p>
+        <button id="reset-button">Reset Game</button>
+    </div>
+
+    <script>
+        const board = ['', '', '', '', '', '', '', '', ''];
+        const gameBoard = document.getElementById('game-board');
+        const gameInfo = document.getElementById('game-info');
+        const resetButton = document.getElementById('reset-button');
+        let currentPlayer = 'X';
+        let gameOver = false;
+
+        function createBoard() {
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleClick);
+                gameBoard.appendChild(cell);
+            }
+        }
+
+        function handleClick(e) {
+            if (gameOver) return;
+
+            const cellIndex = parseInt(e.target.dataset.index);
+            if (board[cellIndex] !== '') return;
+
+            board[cellIndex] = currentPlayer;
+            e.target.textContent = currentPlayer;
+            e.target.classList.add(currentPlayer.toLowerCase());
+
+            if (checkWin()) {
+                gameOver = true;
+                gameInfo.querySelector('p').textContent = `Player ${currentPlayer} Wins!`;
+            } else if (checkDraw()) {
+                gameOver = true;
+                gameInfo.querySelector('p').textContent = 'It is a Draw!';
+            } else {
+                switchPlayer();
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            gameInfo.querySelector('p').textContent = `Player ${currentPlayer}'s Turn`;
+        }
+
+        function checkWin() {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            for (const condition of winConditions) {
+                if (
+                    board[condition[0]] !== '' &&
+                    board[condition[0]] === board[condition[1]] &&
+                    board[condition[0]] === board[condition[2]]
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkDraw() {
+            return board.every(cell => cell !== '');
+        }
+
+        function resetGame() {
+            board.fill('');
+            gameOver = false;
+            currentPlayer = 'X';
+            gameInfo.querySelector('p').textContent = `Player ${currentPlayer}'s Turn`;
+            const cells = gameBoard.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x');
+                cell.classList.remove('o');
+            });
+        }
+
+        createBoard();
+        resetButton.addEventListener('click', resetGame);
+    </script>
+</body>
+</html>
