@@ -120,7 +120,6 @@
                 [0, 3, 6], [1, 4, 7], [2, 5, 8],
                 [0, 4, 8], [2, 4, 6]
             ];
-
             for (const condition of winConditions) {
                 if (
                     board[condition[0]] !== '' &&
@@ -132,11 +131,9 @@
             }
             return false;
         }
-
         function checkDraw() {
             return board.every(cell => cell !== '');
         }
-
         function resetGame() {
             board.fill('');
             gameOver = false;
