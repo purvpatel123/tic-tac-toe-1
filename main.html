@@ -79,7 +79,6 @@
         const resetButton = document.getElementById('reset-button');
         let currentPlayer = 'X';
         let gameOver = false;
-
         function createBoard() {
             for (let i = 0; i < 9; i++) {
                 const cell = document.createElement('div');
@@ -92,7 +91,6 @@
 
         function handleClick(e) {
             if (gameOver) return;
-
             const cellIndex = parseInt(e.target.dataset.index);
             if (board[cellIndex] !== '') return;
 
@@ -151,7 +149,6 @@
                 cell.classList.remove('o');
             });
         }
-
         createBoard();
         resetButton.addEventListener('click', resetGame);
     </script>
