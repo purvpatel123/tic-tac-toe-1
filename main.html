@@ -130,7 +130,8 @@
             return false;
         }
         function checkDraw() {
-            return board.every(cell => cell !== '');
+            return board.every(cell => cell !== '');    //for returning the elements
+
         }
         function resetGame() {
             board.fill('');
